@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Prompts Hub</title>
+
+<style>
+body{
+  margin:0;
+  font-family:Arial;
+  background:#0f172a;
+  color:white;
+}
+
+.wrapper{
+  width:100%;
+  max-width:1200px;
+  margin:auto;
+}
+
+.topbar{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:10px;
+  background:#1e293b;
+}
+
+.icon{
+  font-size:26px;
+  cursor:pointer;
+}
+
+#sideMenu,#adminPanel{
+  position:fixed;
+  top:0;
+  width:85%;
+  max-width:350px;
+  height:100%;
+  background:#111827;
+  padding:20px;
+  transition:0.3s;
+  overflow-y:auto;
+  z-index:999;
+}
+
+#sideMenu{ left:-100%; }
+#adminPanel{ right:-100%; }
+
+.closeBtn{
+  float:right;
+  font-size:22px;
+  cursor:pointer;
+}
+
+.section{
+  margin-bottom:20px;
+  line-height:1.6;
+  background:#1e293b;
+  padding:15px;
+  border-radius:10px;
+}
+
+input,select{
+  width:100%;
+  padding:10px;
+  margin:5px 0;
+}
+
+button{
+  padding:8px;
+  background:#3b82f6;
+  border:none;
+  color:white;
+  cursor:pointer;
+  margin:3px;
+}
+
+.search{
+  text-align:center;
+  padding:10px;
+}
+
+.search input{
+  width:80%;
+  padding:10px;
+}
+
+.tabs{
+  display:flex;
+  overflow-x:auto;
+  gap:10px;
+  padding:10px;
+  background:#111827;
+}
+
+.tab{
+  padding:8px 15px;
+  background:#0f172a;
+  border-radius:20px;
+  cursor:pointer;
+  white-space:nowrap;
+}
+
+.tab.active{
+  background:#3b82f6;
+}
+
+.container{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+  gap:15px;
+  padding:15px;
+}
+
+.card{
+  background:#1e293b;
+  padding:15px;
+  border-radius:10px;
+}
+
+img{
+  width:100%;
+  margin-top:10px;
+  border-radius:10px;
+}
+
+.small{
+  font-size:12px;
+  color:#93c5fd;
+}
+</style>
+</head>
+
+<body>
+
+<div class="wrapper">
+
+<div class="topbar">
+  <div class="icon" onclick="openMenu()">☰</div>
+  <h3>AI Prompts Hub</h3>
+  <div class="icon" onclick="openAdmin()">👤</div>
+</div>
+
+<!-- SIDE MENU -->
+<div id="sideMenu">
+<div class="closeBtn" onclick="closeMenu()">✖</div>
+
+<div class="section">
+<h2>About</h2>
+<p>Welcome to AI Prompts Hub, your ultimate platform for creative AI prompt generation.</p>
+<p>This website is designed for designers, artists, and content creators.</p>
+<p>You can easily explore unique and powerful prompts for AI image generation.</p>
+<p>Our goal is to make creativity simple and accessible for everyone.</p>
+<p>Whether you are a beginner or a professional, this platform is for you.</p>
+<p>We provide categorized prompts to save your time and effort.</p>
+<p>You can copy prompts instantly and use them in your favorite AI tools.</p>
+<p>We continuously update content to keep things fresh and trending.</p>
+<p>Our platform focuses on quality, creativity, and ease of use.</p>
+<p>We aim to inspire your imagination and boost your productivity.</p>
+<p>Everything is designed to give you a smooth and clean experience.</p>
+<p>No complications, just creativity and innovation.</p>
+<p>Start exploring and turn your ideas into stunning visuals.</p>
+</div>
+
+<div class="section">
+<h2>Privacy Policy</h2>
+<p>Your privacy is important to us.</p>
+<p>We do not collect, store, or share any personal information.</p>
+<p>This website does not require user registration.</p>
+<p>All activities remain completely anonymous.</p>
+<p>We do not use tracking systems or third-party tools.</p>
+<p>This platform is only for creative purposes.</p>
+</div>
+
+<div class="section">
+<h2>Contact</h2>
+<p>📧 farhan.k.235869@gmail.com</p>
+</div>
+
+</div>
+
+<!-- ADMIN PANEL -->
+<div id="adminPanel">
+
+<div class="closeBtn" onclick="closeAdmin()">✖</div>
+
+<h2>Admin Login</h2>
+<input type="password" id="adminPass">
+<button onclick="login()">Login</button>
+
+<div id="adminContent" style="display:none;">
+
+<button onclick="logout()">Logout</button>
+
+<hr>
+
+<h3>Add Prompt</h3>
+<input id="prompt">
+<select id="category">
+<option value="cinematic">Cinematic</option>
+<option value="anime">Anime</option>
+<option value="logo">Logo</option>
+<option value="trending">Trending</option>
+<option value="magic">Magic</option>
+</select>
+<input type="file" id="imageFile">
+<button onclick="addPrompt()">Upload</button>
+
+<hr>
+
+<h3>All Prompts</h3>
+<div id="adminList"></div>
+
+</div>
+
+</div>
+
+<div class="search">
+<input id="searchBox" placeholder="Search prompts...">
+</div>
+
+<div class="tabs">
+<div class="tab active" onclick="filter('all',this)">All</div>
+<div class="tab" onclick="filter('cinematic',this)">Cinematic</div>
+<div class="tab" onclick="filter('anime',this)">Anime</div>
+<div class="tab" onclick="filter('logo',this)">Logo</div>
+<div class="tab" onclick="filter('trending',this)">Trending</div>
+<div class="tab" onclick="filter('magic',this)">Magic</div>
+</div>
+
+<div class="container" id="container"></div>
+
+</div>
+
+<script>
+const ADMIN_PASSWORD="F@rhan253689";
+
+let data = JSON.parse(localStorage.getItem("prompts")) || [];
+let isAdmin=false;
+let id = data.length ? data[data.length-1].id + 1 : 1;
+
+function saveLocal(){
+  localStorage.setItem("prompts", JSON.stringify(data));
+}
+
+function openMenu(){document.getElementById("sideMenu").style.left="0";}
+function closeMenu(){document.getElementById("sideMenu").style.left="-100%";}
+
+function openAdmin(){document.getElementById("adminPanel").style.right="0";}
+function closeAdmin(){document.getElementById("adminPanel").style.right="-100%";}
+
+function login(){
+  let p=document.getElementById("adminPass").value;
+  if(p===ADMIN_PASSWORD){
+    isAdmin=true;
+    document.getElementById("adminContent").style.display="block";
+    renderAdmin();
+  }else{
+    alert("Wrong Password");
+  }
+}
+
+function logout(){
+  isAdmin=false;
+  document.getElementById("adminContent").style.display="none";
+}
+
+function addPrompt(){
+  let prompt=document.getElementById("prompt").value;
+  let category=document.getElementById("category").value;
+  let file=document.getElementById("imageFile").files[0];
+
+  if(file){
+    let reader=new FileReader();
+    reader.onload=e=>save(prompt,category,e.target.result);
+    reader.readAsDataURL(file);
+  }else{
+    save(prompt,category,"");
+  }
+}
+
+function save(prompt,category,image){
+  data.push({id:id++,prompt,category,image});
+  saveLocal();
+  render();
+  renderAdmin();
+
+  document.getElementById("prompt").value="";
+  document.getElementById("imageFile").value="";
+}
+
+function render(){
+  let box=document.getElementById("container");
+  box.innerHTML="";
+  data.forEach(item=>{
+    let div=document.createElement("div");
+    div.className="card";
+    div.setAttribute("data-category",item.category);
+    div.innerHTML=`
+      <div class="small">ID: ${item.id}</div>
+      <div>${item.prompt}</div>
+      ${item.image?`<img src="${item.image}">`:""}
+      <button onclick="copy('${item.prompt}')">Copy</button>
+    `;
+    box.appendChild(div);
+  });
+}
+
+function renderAdmin(){
+  let box=document.getElementById("adminList");
+  box.innerHTML="";
+  data.forEach((item,index)=>{
+    let div=document.createElement("div");
+    div.className="card";
+    div.innerHTML=`
+      <div class="small">ID: ${item.id}</div>
+      <div>${item.prompt}</div>
+      <button onclick="editPrompt(${index})">Edit</button>
+      <button onclick="deletePrompt(${index})">Delete</button>
+    `;
+    box.appendChild(div);
+  });
+}
+
+function editPrompt(index){
+  let newText=prompt("Edit Prompt:",data[index].prompt);
+  if(newText){
+    data[index].prompt=newText;
+    saveLocal();
+    render();
+    renderAdmin();
+  }
+}
+
+function deletePrompt(index){
+  data.splice(index,1);
+  saveLocal();
+  render();
+  renderAdmin();
+}
+
+function copy(t){
+  navigator.clipboard.writeText(t);
+}
+
+function filter(cat,el){
+  document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
+  el.classList.add("active");
+  document.querySelectorAll(".card").forEach(c=>{
+    let cc=c.getAttribute("data-category");
+    c.style.display=(cat==="all"||cc.includes(cat))?"block":"none";
+  });
+}
+
+document.getElementById("searchBox").addEventListener("input",function(){
+  let v=this.value.toLowerCase();
+  document.querySelectorAll(".card").forEach(c=>{
+    c.style.display=c.innerText.toLowerCase().includes(v)?"block":"none";
+  });
+});
+
+render();
+</script>
+
+</body>
+</html>
