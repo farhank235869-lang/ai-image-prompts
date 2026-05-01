@@ -357,7 +357,7 @@ function filter(cat,el){
 document.getElementById("searchBox").addEventListener("input",function(){
   let v=this.value.toLowerCase();
   document.querySelectorAll(".card").forEach(c=>{
-    c.style.display=c.innerText.toLowerCase().includes(v)?"block":"none";
+    c.style.display = (cat === "all" || cc === cat) ? "block" : "none";
   });
 });
 
